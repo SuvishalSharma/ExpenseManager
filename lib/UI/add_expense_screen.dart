@@ -6,13 +6,7 @@ import '../providers/categories_stream_provider.dart';
 import '../database/app_database.dart';
 import '../providers/categories_repo_provider.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(home: const ExpenseListScreen());
-  }
-}
+
 
 class AddExpenseScreen extends ConsumerStatefulWidget {
   const AddExpenseScreen({super.key});
@@ -72,9 +66,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 loading: () => const CircularProgressIndicator(),
                 error: (e, _) => Text(e.toString()),
                 data: (categories) {
-                  print('Categories count: ${categories.length}');
+                  // print('Categories count: ${categories.length}');
                   return DropdownButtonFormField<Category>(
-                    value: selectedCategory,
+                    initialValue: selectedCategory,
                     decoration: const InputDecoration(
                       labelText: 'Category',
                       border: OutlineInputBorder(),

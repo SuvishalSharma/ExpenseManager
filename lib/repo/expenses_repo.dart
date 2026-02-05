@@ -74,4 +74,7 @@ class ExpensesRepo {
       ),
     );
   }
+  Stream<Expense> watchExpenseById(int expenseId) {
+    return(db.select(db.expenses)..where((e)=>e.id.equals(expenseId))).watchSingle();
+  }
 }

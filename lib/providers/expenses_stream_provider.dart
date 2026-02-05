@@ -6,3 +6,8 @@ final expensesStreamProvider = StreamProvider<List<Expense>>((ref) {
   final repo = ref.watch(expensesRepoProvider);
   return repo.watchAllExpenses();
 });
+
+final expenseByIdProvider = StreamProvider.family<Expense?, int>((ref, expenseId){
+  final repo = ref.watch(expensesRepoProvider);
+  return repo.watchExpenseById(expenseId);
+});
