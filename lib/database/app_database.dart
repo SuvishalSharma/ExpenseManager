@@ -13,11 +13,8 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
-
-  
-
-
 }
+
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dir = await getApplicationDocumentsDirectory();

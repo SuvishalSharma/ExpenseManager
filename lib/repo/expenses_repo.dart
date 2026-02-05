@@ -3,7 +3,7 @@ import 'package:drift/drift.dart';
 import '../database/app_database.dart';
 
 class ExpensesRepo {
-  AppDatabase db;
+  final AppDatabase db;
   ExpensesRepo(this.db);
 
   Stream<List<Expense>> watchAllExpenses() {
@@ -11,21 +11,67 @@ class ExpensesRepo {
   }
 
   Future<void> addExpense(int amount, int categoryId, DateTime dateTime) async {
-    // final row = await(db.select(db.expenses)..where((t)=>t.id.equals(amount))).getSingleOrNull();
     if (amount <= 0) {
-      throw Exception(
-        "Not accepted with invalid format check amount/date time format/ category id exist",
-      );
-    } else {
-      await (db
-          .into(db.expenses)
-          .insert(
-            ExpensesCompanion(
-              amount: Value(amount),
-              categoryId: Value(categoryId),
-              date: Value(dateTime),
-            ),
-          ));
+      throw Exception("Invalid amount");
     }
+    final category = await (db.select(
+      db.categories,
+    )..where((c) => c.id.equals(categoryId))).getSingleOrNull();
+
+    if (category == null) {
+      throw Exception('Invalid Category');
+    }
+
+    await (db
+        .into(db.expenses)
+        .insert(
+          ExpensesCompanion(
+            amount: Value(amount),
+            categoryId: Value(categoryId),
+            date: Value(dateTime),
+          ),
+        ));
+  }
+
+  Future<void> deleteExpense(int expenseId) async {
+    final expense = await (db.select(
+      db.expenses,
+    )..where((e) => e.id.equals(expenseId))).getSingleOrNull();
+
+    if (expense == null) {
+      return;
+    }
+
+    await (db.delete(db.expenses)..where((e) => e.id.equals(expenseId))).go();
+  }
+
+  Future<void> updateExpense(
+    int expenseId,
+    int amount,
+    int categoryId,
+    DateTime dateTime,
+  ) async {
+    final expense = await (db.select(
+      db.expenses,
+    )..where((e) => e.id.equals(expenseId))).getSingleOrNull();
+
+    if (expense == null) throw Exception("Invalid Expense");
+
+    if (amount <= 0) {
+      throw Exception("Invalid amount");
+    }
+    final category = await (db.select(
+      db.categories,
+    )..where((c) => c.id.equals(categoryId))).getSingleOrNull();
+
+    if (category == null) throw Exception("Invalid Category");
+
+    await (db.update(db.expenses)..where((e) => e.id.equals(expenseId))).write(
+      ExpensesCompanion(
+        amount: Value(amount),
+        categoryId: Value(categoryId),
+        date: Value(dateTime),
+      ),
+    );
   }
 }
