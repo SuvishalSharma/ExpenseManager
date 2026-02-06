@@ -3,11 +3,11 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-
+import 'user_table.dart';
 import 'tables.dart';
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Expenses, Categories])
+@DriftDatabase(tables: [Expenses, Categories,UserTable])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
    AppDatabase.forTesting(super.e);
