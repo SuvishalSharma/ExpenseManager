@@ -1,4 +1,3 @@
-import 'package:demo/UI/expense_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:demo/providers/expense_action_provider.dart';

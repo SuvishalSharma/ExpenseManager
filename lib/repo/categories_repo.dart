@@ -18,7 +18,7 @@ class CategoriesRepo {
         CategoriesCompanion.insert(categoryName: 'Food'),
         CategoriesCompanion.insert(categoryName: 'Drinks'),
         CategoriesCompanion.insert(categoryName: 'Movies'),
-        CategoriesCompanion.insert(categoryName: 'Clubs'),
+        CategoriesCompanion.insert(categoryName: 'Hotels'),
       ]);
     });
   }

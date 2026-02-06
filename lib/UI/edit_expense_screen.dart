@@ -74,7 +74,7 @@ class _EditExpenseScreenState extends ConsumerState<EditExpenseScreen> {
                       ),
                       const SizedBox(height: 15),
                       DropdownButtonFormField<Category>(
-                        value: selectedCategory,
+                        initialValue: selectedCategory,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Category',
