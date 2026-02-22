@@ -10,8 +10,7 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
       _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState
-    extends ConsumerState<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -35,17 +34,13 @@ class _ForgotPasswordScreenState
             const SizedBox(height: 12),
             TextField(
               controller: _passwordController,
-              decoration:
-                  const InputDecoration(labelText: 'New Password'),
+              decoration: const InputDecoration(labelText: 'New Password'),
               obscureText: true,
             ),
             const SizedBox(height: 20),
 
             if (_error != null)
-              Text(
-                _error!,
-                style: const TextStyle(color: Colors.red),
-              ),
+              Text(_error!, style: const TextStyle(color: Colors.red)),
 
             if (_success)
               const Text(
@@ -81,8 +76,7 @@ class _ForgotPasswordScreenState
                       });
 
                       if (success) {
-                        await Future.delayed(
-                            const Duration(seconds: 1));
+                        await Future.delayed(const Duration(seconds: 1));
                         Navigator.pop(context);
                       }
                     },

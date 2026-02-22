@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_controller_provider.dart';
+import 'expense_list_screen.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -19,7 +20,7 @@ class WelcomeScreen extends ConsumerWidget {
             onPressed: () {
               ref.read(authControllerProvider.notifier).logout();
             },
-          )
+          ),
         ],
       ),
       body: Center(
@@ -38,7 +39,12 @@ class WelcomeScreen extends ConsumerWidget {
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                // navigate to expense list screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ExpenseListScreen(),
+                  ),
+                );
               },
               child: const Text('Go to Expenses'),
             ),
