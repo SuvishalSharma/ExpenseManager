@@ -1,19 +1,26 @@
 import 'package:drift/drift.dart';
-
 import '../database/app_database.dart';
 
 class ExpensesRepo {
   final AppDatabase db;
   ExpensesRepo(this.db);
 
-  Stream<List<Expense>> watchAllExpenses() {
-    return db.select(db.expenses).watch();
+  Stream<List<Expense>> watchExpensesByUser(int userId) {
+    return (db.select(
+      db.expenses,
+    )..where((e) => e.userId.equals(userId))).watch();
   }
 
-  Future<void> addExpense(int amount, int categoryId, DateTime dateTime) async {
+  Future<void> addExpense(
+    int amount,
+    int categoryId,
+    DateTime dateTime,
+    int userId,
+  ) async {
     if (amount <= 0) {
       throw Exception("Invalid amount");
     }
+
     final category = await (db.select(
       db.categories,
     )..where((c) => c.id.equals(categoryId))).getSingleOrNull();
@@ -22,27 +29,30 @@ class ExpensesRepo {
       throw Exception('Invalid Category');
     }
 
-    await (db
-        .into(db.expenses)
-        .insert(
-          ExpensesCompanion(
-            amount: Value(amount),
-            categoryId: Value(categoryId),
-            date: Value(dateTime),
-          ),
-        ));
-  }
+    final user = await (db.select(
+      db.userTable,
+    )..where((u) => u.id.equals(userId))).getSingleOrNull();
 
-  Future<void> deleteExpense(int expenseId) async {
-    final expense = await (db.select(
-      db.expenses,
-    )..where((e) => e.id.equals(expenseId))).getSingleOrNull();
-
-    if (expense == null) {
-      return;
+    if (user == null) {
+      throw Exception('Invalid User');
     }
 
-    await (db.delete(db.expenses)..where((e) => e.id.equals(expenseId))).go();
+    await db
+        .into(db.expenses)
+        .insert(
+          ExpensesCompanion.insert(
+            amount: amount,
+            categoryId: categoryId,
+            date: dateTime,
+            userId: userId,
+          ),
+        );
+  }
+
+  Future<void> deleteExpense(int expenseId, int userId) async {
+    await (db.delete(
+      db.expenses,
+    )..where((e) => e.id.equals(expenseId) & e.userId.equals(userId))).go();
   }
 
   Future<void> updateExpense(
@@ -50,23 +60,21 @@ class ExpensesRepo {
     int amount,
     int categoryId,
     DateTime dateTime,
+    int userId,
   ) async {
-    final expense = await (db.select(
-      db.expenses,
-    )..where((e) => e.id.equals(expenseId))).getSingleOrNull();
-
-    if (expense == null) throw Exception("Invalid Expense");
-
     if (amount <= 0) {
       throw Exception("Invalid amount");
     }
+
     final category = await (db.select(
       db.categories,
     )..where((c) => c.id.equals(categoryId))).getSingleOrNull();
 
     if (category == null) throw Exception("Invalid Category");
 
-    await (db.update(db.expenses)..where((e) => e.id.equals(expenseId))).write(
+    await (db.update(
+      db.expenses,
+    )..where((e) => e.id.equals(expenseId) & e.userId.equals(userId))).write(
       ExpensesCompanion(
         amount: Value(amount),
         categoryId: Value(categoryId),
@@ -74,7 +82,10 @@ class ExpensesRepo {
       ),
     );
   }
-  Stream<Expense> watchExpenseById(int expenseId) {
-    return(db.select(db.expenses)..where((e)=>e.id.equals(expenseId))).watchSingle();
+
+  Stream<Expense?> watchExpenseByIdForUser(int expenseId, int userId) {
+    return (db.select(db.expenses)
+          ..where((e) => e.id.equals(expenseId) & e.userId.equals(userId)))
+        .watchSingleOrNull();
   }
 }

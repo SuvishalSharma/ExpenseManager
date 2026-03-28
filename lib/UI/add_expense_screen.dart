@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:demo/providers/expense_action_provider.dart';
 import '../providers/categories_stream_provider.dart';
-import '../database/app_database.dart';
 import '../providers/categories_repo_provider.dart';
-
-
+import '../providers/auth_controller_provider.dart';
+import '../database/app_database.dart';
 
 class AddExpenseScreen extends ConsumerStatefulWidget {
   const AddExpenseScreen({super.key});
@@ -17,6 +16,7 @@ class AddExpenseScreen extends ConsumerStatefulWidget {
 class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   final GlobalKey<FormState> _key = GlobalKey<FormState>();
   final TextEditingController amountcontroller = TextEditingController();
+
   Category? selectedCategory;
 
   @override
@@ -40,7 +40,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              /// Amount
               TextFormField(
                 controller: amountcontroller,
                 keyboardType: TextInputType.number,
@@ -60,12 +59,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               ),
               const SizedBox(height: 16),
 
-              /// Category Dropdown
               categoriesAsync.when(
                 loading: () => const CircularProgressIndicator(),
                 error: (e, _) => Text(e.toString()),
                 data: (categories) {
-                  // print('Categories count: ${categories.length}');
                   return DropdownButtonFormField<Category>(
                     initialValue: selectedCategory,
                     decoration: const InputDecoration(
@@ -91,7 +88,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
               const SizedBox(height: 24),
 
-              /// Save Button
               ElevatedButton(
                 onPressed: actionState.isLoading
                     ? null
@@ -99,13 +95,20 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                         if (_key.currentState!.validate()) {
                           final amount = int.parse(amountcontroller.text);
 
+                          final authState = ref.read(authControllerProvider);
+                          final user = authState.user;
+
+                          if (user == null) return;
+
                           ref
                               .read(expenseActionProvider.notifier)
                               .addExpense(
                                 amount,
                                 selectedCategory!.id,
                                 DateTime.now(),
+                                user.id,
                               );
+
                           Navigator.pop(context);
                         }
                       },

@@ -6,16 +6,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/expenses_stream_provider.dart';
 import 'edit_expense_screen.dart';
 import '../providers/categoy_wise_total_provider.dart';
+import '../providers/auth_controller_provider.dart';
 
 class ExpenseListScreen extends ConsumerWidget {
   const ExpenseListScreen({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(categorySeedProvider);
+
     final expensesAsync = ref.watch(expensesStreamProvider);
-    ref.watch(expenseActionProvider);
     final categoryTotals = ref.watch(categoryTotalsByNameProvider);
-    final total = ref.watch(totalAmountProvider);
+
+    final total = categoryTotals.values.fold<int>(
+      0,
+      (previousValue, element) => previousValue + element,
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Expenses'),
@@ -31,12 +38,12 @@ class ExpenseListScreen extends ConsumerWidget {
         ],
       ),
       body: Column(
-        crossAxisAlignment : CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /// 🔹 Summary Section
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Total : ₹$total',
@@ -45,20 +52,21 @@ class ExpenseListScreen extends ConsumerWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height:12),
-                ...categoryTotals.entries.map((entry){
+                const SizedBox(height: 12),
+
+                ...categoryTotals.entries.map((entry) {
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(entry.key),
-                      Text('₹${entry.value}'),
-                    ],
+                    children: [Text(entry.key), Text('₹${entry.value}')],
                   );
                 }),
               ],
             ),
           ),
+
           const Divider(),
+
+          /// 🔹 Expense List
           Expanded(
             child: expensesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -72,22 +80,29 @@ class ExpenseListScreen extends ConsumerWidget {
                   itemCount: expenses.length,
                   itemBuilder: (context, index) {
                     final expense = expenses[index];
+
                     return ListTile(
-                      title: Text('Amount: ${expense.amount}'),
+                      title: Text('Amount: ₹${expense.amount}'),
                       subtitle: Text(expense.date.toString()),
+
+                      /// 🔹 Delete button
                       trailing: IconButton(
                         icon: const Icon(Icons.delete),
                         onPressed: () {
                           _confirmDelete(context, ref, expense.id);
                         },
                       ),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              EditExpenseScreen(expenseId: expense.id),
-                        ),
-                      ),
+
+                      /// 🔹 Edit navigation
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                EditExpenseScreen(expenseId: expense.id),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
@@ -99,6 +114,7 @@ class ExpenseListScreen extends ConsumerWidget {
     );
   }
 
+  /// 🔴 Delete confirmation dialog (SAFE)
   Future<void> _confirmDelete(
     BuildContext context,
     WidgetRef ref,
@@ -123,7 +139,14 @@ class ExpenseListScreen extends ConsumerWidget {
     );
 
     if (shouldDelete == true) {
-      ref.read(expenseActionProvider.notifier).deleteExpense(expenseId);
+      final authState = ref.read(authControllerProvider);
+      final user = authState.user;
+
+      if (user == null) return;
+
+      ref
+          .read(expenseActionProvider.notifier)
+          .deleteExpense(expenseId, user.id);
     }
   }
 }

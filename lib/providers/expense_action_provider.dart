@@ -1,5 +1,5 @@
-import 'package:demo/providers/expenses_repo_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:demo/providers/expenses_repo_provider.dart';
 import '../repo/expenses_repo.dart';
 
 class ExpenseActionState {
@@ -11,22 +11,28 @@ class ExpenseActionState {
 
 class ExpenseActionNotifier extends StateNotifier<ExpenseActionState> {
   final ExpensesRepo _expensesRepo;
+
   ExpenseActionNotifier(this._expensesRepo) : super(const ExpenseActionState());
 
-  Future<void> addExpense(int amount, int categoryId, DateTime dateTime) async {
+  Future<void> addExpense(
+    int amount,
+    int categoryId,
+    DateTime dateTime,
+    int userId,
+  ) async {
     state = const ExpenseActionState(isLoading: true);
     try {
-      await _expensesRepo.addExpense(amount, categoryId, dateTime);
+      await _expensesRepo.addExpense(amount, categoryId, dateTime, userId);
       state = const ExpenseActionState();
     } catch (e) {
       state = ExpenseActionState(error: e.toString());
     }
   }
 
-  Future<void> deleteExpense(int expenseId) async {
+  Future<void> deleteExpense(int expenseId, int userId) async {
     state = const ExpenseActionState(isLoading: true);
     try {
-      await _expensesRepo.deleteExpense(expenseId);
+      await _expensesRepo.deleteExpense(expenseId, userId);
       state = const ExpenseActionState();
     } catch (e) {
       state = ExpenseActionState(error: e.toString());
@@ -38,6 +44,7 @@ class ExpenseActionNotifier extends StateNotifier<ExpenseActionState> {
     int amount,
     int categoryId,
     DateTime dateTime,
+    int userId,
   ) async {
     state = const ExpenseActionState(isLoading: true);
     try {
@@ -46,6 +53,7 @@ class ExpenseActionNotifier extends StateNotifier<ExpenseActionState> {
         amount,
         categoryId,
         dateTime,
+        userId,
       );
       state = const ExpenseActionState();
     } catch (e) {

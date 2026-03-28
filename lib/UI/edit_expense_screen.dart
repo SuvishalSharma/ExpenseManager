@@ -4,10 +4,13 @@ import '../database/app_database.dart';
 import '../providers/expenses_stream_provider.dart';
 import '../providers/expense_action_provider.dart';
 import '../providers/categories_stream_provider.dart';
+import '../providers/auth_controller_provider.dart';
 
 class EditExpenseScreen extends ConsumerStatefulWidget {
   final int expenseId;
+
   const EditExpenseScreen({required this.expenseId, super.key});
+
   @override
   ConsumerState<EditExpenseScreen> createState() => _EditExpenseScreenState();
 }
@@ -15,8 +18,10 @@ class EditExpenseScreen extends ConsumerStatefulWidget {
 class _EditExpenseScreenState extends ConsumerState<EditExpenseScreen> {
   final GlobalKey<FormState> _key = GlobalKey<FormState>();
   final TextEditingController amountController = TextEditingController();
+
   Category? selectedCategory;
   bool _initialized = false;
+
   @override
   void dispose() {
     amountController.dispose();
@@ -28,19 +33,21 @@ class _EditExpenseScreenState extends ConsumerState<EditExpenseScreen> {
     final expensesAsync = ref.watch(expenseByIdProvider(widget.expenseId));
     final categoriesAsync = ref.watch(categoriesStreamProvider);
     final actionState = ref.watch(expenseActionProvider);
+
     return Scaffold(
-      appBar: AppBar(title: Text('Edit Expense')),
+      appBar: AppBar(title: const Text('Edit Expense')),
       body: Padding(
         padding: const EdgeInsets.all(18),
         child: expensesAsync.when(
-          loading: () => Center(child: const CircularProgressIndicator()),
+          loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(child: Text(e.toString())),
           data: (expense) {
             if (expense == null) {
               return const Center(child: Text('Expense not found'));
             }
+
             return categoriesAsync.when(
-              loading: () => Center(child: const CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text(e.toString())),
               data: (categories) {
                 if (!_initialized) {
@@ -50,6 +57,7 @@ class _EditExpenseScreenState extends ConsumerState<EditExpenseScreen> {
                   );
                   _initialized = true;
                 }
+
                 return Form(
                   key: _key,
                   child: Column(
@@ -73,6 +81,7 @@ class _EditExpenseScreenState extends ConsumerState<EditExpenseScreen> {
                         },
                       ),
                       const SizedBox(height: 15),
+
                       DropdownButtonFormField<Category>(
                         initialValue: selectedCategory,
                         decoration: const InputDecoration(
@@ -93,7 +102,9 @@ class _EditExpenseScreenState extends ConsumerState<EditExpenseScreen> {
                         validator: (value) =>
                             value == null ? 'Select category' : null,
                       ),
+
                       const SizedBox(height: 25),
+
                       ElevatedButton(
                         onPressed: actionState.isLoading
                             ? null
@@ -102,6 +113,14 @@ class _EditExpenseScreenState extends ConsumerState<EditExpenseScreen> {
                                   final amount = int.parse(
                                     amountController.text,
                                   );
+
+                                  final authState = ref.read(
+                                    authControllerProvider,
+                                  );
+                                  final user = authState.user;
+
+                                  if (user == null) return;
+
                                   ref
                                       .read(expenseActionProvider.notifier)
                                       .updateExpense(
@@ -109,7 +128,9 @@ class _EditExpenseScreenState extends ConsumerState<EditExpenseScreen> {
                                         amount,
                                         selectedCategory!.id,
                                         DateTime.now(),
+                                        user.id,
                                       );
+
                                   Navigator.pop(context);
                                 }
                               },
@@ -127,6 +148,4 @@ class _EditExpenseScreenState extends ConsumerState<EditExpenseScreen> {
       ),
     );
   }
-
- 
 }
